@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      args:
+        MODE: 'dev'
+    command: |
+      bash -c '
+        if [ "$SSH_DEBUG" == "true" ]
+        then
+          apt-get update
+          apt-get install -y openssh-server
+
+          mkdir -p /var/run/sshd
+          echo root:password | chpasswd
+          sed -i "s/#PermitRootLogin prohibit-password/PermitRootLogin yes/" /etc/ssh/sshd_config
+
+          echo Waiting for ssh-connections...
+          /usr/sbin/sshd -D
+        else
+          sleep 10 && make runserver
+        fi
+      '
+    environment:
+      SSH_DEBUG: 'true'
+    ports:
+      - 2222:22

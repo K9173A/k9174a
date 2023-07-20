@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  nginx:
+    build:
+      context: ./nginx
+    volumes:
+      - nginx_cache:/var/cache/nginx
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - app
+
+  app:
+    build:
+      context: ./backend
+      args:
+        MODE: 'prod'
+    command: bash -c 'sleep 10 && make runserver'
+    environment:
+      POSTGRES_DB: '${POSTGRES_DB}'
+      POSTGRES_USER: '${POSTGRES_USER}'
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}'
+      POSTGRES_HOST: '${POSTGRES_HOST}'
+      POSTGRES_PORT: '${POSTGRES_PORT}'
+    volumes:
+      - ./backend/src/k9174a:/var/www/server/k9174a
+    ports:
+      - 7777:7777
+    depends_on:
+      - db
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: '${POSTGRES_DB}'
+      POSTGRES_USER: '${POSTGRES_USER}'
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+volumes:
+  nginx_cache:
+    driver: local
+    external: false
+  postgres_data:
+    driver: local
+    external: false

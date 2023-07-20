@@ -1,0 +1,2 @@
+-r requirements-prod.txt
+django-cors-headers==4.1.0
