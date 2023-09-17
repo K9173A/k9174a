@@ -1,17 +1,16 @@
 import React from 'react';
-import {BrowserRouter} from 'react-router-dom';
+import {ThemeProvider} from '@mui/material';
+import AppRouter from './ui/AppRouter';
+import theme from './theme';
 import './App.css';
-import Header from './components/UI/Header/Header';
-import AppRouter from './components/AppRouter';
 
 const App = () => {
     return (
-        <div className="App">
-            <BrowserRouter>
-                <Header/>
-                <AppRouter/>
-            </BrowserRouter>
-        </div>
+        <ThemeProvider theme={theme}>
+            <div className="App">
+                <AppRouter />
+            </div>
+        </ThemeProvider>
     );
 }
 

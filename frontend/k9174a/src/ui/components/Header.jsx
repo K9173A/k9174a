@@ -10,6 +10,7 @@ import Typography from '@mui/material/Typography';
 
 const Header = () => {
     const links = {
+        '/login': 'Login',
         '/storage': 'Storage',
         '/about': 'About',
         '/profile': 'Profile'
@@ -17,10 +18,30 @@ const Header = () => {
 
     return (
         <Box>
-            <AppBar position="static" sx={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <IconButton disableRipple size="large" edge="start" color="inherit" aria-label="menu" sx={{ mx: 2 }}>
-                    <CloudIcon sx={{ mr: 1 }} />
-                    <Typography variant="h6" component="div">
+            <AppBar
+                position="static"
+                sx={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between'
+                }}
+            >
+                <IconButton
+                    size="large"
+                    edge="start"
+                    color="inherit"
+                    aria-label="menu"
+                    sx={{
+                        mx: 2
+                    }}
+                    disableRipple
+                >
+                    <CloudIcon
+                        sx={{ mr: 1 }}
+                    />
+                    <Typography
+                        variant="h6"
+                        component="div"
+                    >
                         K9174A
                     </Typography>
                 </IconButton>
