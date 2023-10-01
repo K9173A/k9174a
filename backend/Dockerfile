@@ -1,4 +1,4 @@
-FROM pypy:3.7
+FROM python:3.7.16-slim-bullseye
 
 ENV PYTHONUNBUFFERED=1
 
@@ -8,8 +8,8 @@ RUN set -ex \
     export DEBIAN_FRONTEND=noninteractive \
     ; apt-get update \
     ; apt-get install -y --no-install-recommends --allow-unauthenticated \
-    libpq-dev \
-    net-tools
+    make \
+    libpq-dev
 
 COPY src/Makefile /var/www/server/Makefile
 COPY src/requirements /var/www/server/requirements

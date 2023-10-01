@@ -2,7 +2,7 @@
 dev.up:
 	docker compose -f docker-compose.prod.yml -f docker-compose.dev.yml --env-file .env.dev up
 dev.build:
-	docker-compose -f docker-compose.prod.yml -f docker-compose.dev.yml build
+	docker-compose -f docker-compose.prod.yml -f docker-compose.dev.yml --env-file .env.dev build
 dev.exec.app.bash:
 	docker-compose -f docker-compose.prod.yml -f docker-compose.dev.yml exec app bash
 dev.exec.app.make:

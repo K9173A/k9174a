@@ -1,4 +1,5 @@
 import React from 'react';
+import { useCookies } from "react-cookie";
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
@@ -13,6 +14,18 @@ import classes from './Login.module.css';
 import {login} from '../../api/service';
 
 const Login = () => {
+        // todo: check token -> redirect to /login if not present
+    const [cookies, setCookie] = useCookies(['K9174A_TOKEN']);
+
+    React.useEffect(() => {
+        if (cookies.K9174A_TOKEN) {
+            console.log('Кука есть');
+        } else {
+            console.log('Куки нет');
+        }
+    }, [cookies.K9174A_TOKEN]);
+
+
     const [username, setUsername] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [showPassword, setShowPassword] = React.useState(false);
@@ -22,10 +35,7 @@ const Login = () => {
     const handleLoginButtonClick = (event) => {
         event.preventDefault();
         login({username, password})
-            .then((response) => {
-                console.log(response);
-                // localStorage.setItem('K9174A_TOKEN', response['token'])
-            })
+            .then((response) => setCookie('K9174A_TOKEN', response['token']))
             .catch(() => console.log('failed'));
     }
 

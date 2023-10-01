@@ -6,4 +6,4 @@ const service = axios.create({
 });
 
 export const register = (data) => service.post('register/', data);
-export const login = (data) => service.post('token/', data);
+export const login = (data) => service.post('login/', data);

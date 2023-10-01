@@ -1,12 +1,14 @@
 from django.urls import path
-from rest_framework.authtoken.views import obtain_auth_token
+from knox.views import LoginView, LogoutView, LogoutAllView
 
-from .views import UserCreateAPIView
+from .views import RegisterAPIView
 
 
 app_name = 'auth'
 
 urlpatterns = [
-    path('token/', view=obtain_auth_token, name='token'),
-    path('register/', view=UserCreateAPIView.as_view(), name='register'),
+    path('login/', view=LoginView.as_view(), name='login'),
+    path('logout/', view=LogoutView.as_view(), name='logout'),
+    path('logoutall/', view=LogoutAllView.as_view(), name='logoutall'),
+    path('register/', view=RegisterAPIView.as_view(), name='register'),
 ]

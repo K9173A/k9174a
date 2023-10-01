@@ -1,3 +1,5 @@
+import logging
+from datetime import timedelta
 from logging import getLogger
 from os import getenv
 from sys import argv
@@ -18,7 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'corsheaders',
     'rest_framework',
-    'rest_framework.authtoken',
+    'knox',
     'api.authapp.apps.AuthappConfig',
     'api.storageapp.apps.StorageappConfig',
 ]
@@ -51,10 +53,14 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
-    )
+REST_KNOX = {
+    'SECURE_HASH_ALGORITHM': 'cryptography.hazmat.primitives.hashes.SHA512',
+    'AUTH_TOKEN_CHARACTER_LENGTH': 64,
+    'TOKEN_TTL': timedelta(hours=24),
+    'USER_SERIALIZER': 'knox.serializers.UserSerializer',
+    'TOKEN_LIMIT_PER_USER': None,
+    'AUTO_REFRESH': False,
+    'EXPIRY_DATETIME_FORMAT': '%Y-%m-%d %H:%M',
 }
 
 LOGGING = {
@@ -96,10 +102,11 @@ logger = getLogger('django')
 if DEBUG:
     MIDDLEWARE.append('corsheaders.middleware.CorsMiddleware')
     CORS_ALLOWED_HEADERS = ['127.0.0.1:3000', 'localhost:3000']
-    logger.warning(f'Using CORS headers: {CORS_ALLOWED_HEADERS}')
-    logger.warning(f'Using database connection: {DATABASES["default"]}')
+    print(f'Using CORS headers: {CORS_ALLOWED_HEADERS}')
+    print(f'Using database connection: {DATABASES["default"]}')
 
 # Settings for unit-tests
 if 'test' in argv:
     DEFAULT_FILE_STORAGE = 'api.storageapp.storages.InMemoryStorage'
-    logger.warning(f'Using {DEFAULT_FILE_STORAGE} for tests')
+    print(f'Using {DEFAULT_FILE_STORAGE} for tests')
+    logging.disable(logging.CRITICAL)

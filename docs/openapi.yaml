@@ -1,0 +1,148 @@
+openapi: 3.1.0
+
+info:
+  title: K9174A API
+  description: API of K9174A Storage
+  version: 1.0.0
+
+servers:
+  - url: 'https://k9174a.com/api'
+    description: Production server
+  - url: 'http://localhost/api'
+    description: Development server
+
+security:
+  - AuthTokenCookie: []
+
+paths:
+  /auth/register:
+    post:
+      summary: Register user on the website
+      requestBody:
+        description: User credentials
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegisterRequest'
+      responses:
+        201:
+          description: User is created successfully
+  /auth/login:
+    post:
+      summary: Login user on the website, using auth token
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+            format: 'Basic base64encode(username:password)'
+      responses:
+        200:
+          description: User has been logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLoginSuccessfullResponse'
+        403:
+          description: User credentials required for login are missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLoginErrorResponse'
+  /auth/logout:
+    post:
+      summary: Logout current user device from the website
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+            format: 'Token <authtoken>'
+      responses:
+        204:
+          description: User has been logged out successfully
+        401:
+          description: User has sent incorrect/empty authtoken
+  /auth/logoutall:
+    post:
+      summary: Logout all user devices from the website
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+            format: 'Token <authtoken>'
+      responses:
+        204:
+          description: All user devices have been logged out successfully
+        401:
+          description: User has sent incorrect/empty authtoken
+
+
+components:
+  securitySchemes:
+    AuthTokenCookie:
+      in: cookie
+      name: K9174A_TOKEN
+      type: apiKey
+      description: Authorization token that keeps user logged in
+  schemas:
+    UserRegisterRequest:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          example: 'JohnDoe'
+        email:
+          type: string
+          format: email
+          example: 'johndoe@gmail.com'
+        password:
+          type: string
+          example: '1234'
+    UserLoginSuccessfullResponse:
+      type: object
+      required:
+        - expiry
+        - token
+        - user
+      properties:
+        expiry:
+          type: string # todo: datetime?
+          example: '2023-10-02 10:36'
+        token:
+          type: string
+          example: '1a6d16b06fd22da0bf71d4dbd2d3b8c39262fe0da7fc63a2eb6843671bb98686'
+        user:
+          type: object
+          required:
+            - username
+          properties:
+            username:
+              type: string
+              example: 'JohnDoe'
+    UserLoginErrorResponse:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: object
+          required:
+            - string
+            - code
+          properties:
+            string:
+              type: string
+              example: 'Authentication credentials were not provided.'
+            code:
+              type: string
+              example: 'not_authenticated'
