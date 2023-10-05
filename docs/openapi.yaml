@@ -28,6 +28,8 @@ paths:
       responses:
         201:
           description: User is created successfully
+        400:
+          description: User credentials required for registration are missing or incorrect
   /auth/login:
     post:
       summary: Login user on the website, using auth token
@@ -116,7 +118,7 @@ components:
         - user
       properties:
         expiry:
-          type: string # todo: datetime?
+          type: string
           example: '2023-10-02 10:36'
         token:
           type: string

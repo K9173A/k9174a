@@ -11,6 +11,12 @@ dev.exec.app.migrate:
 	$(MAKE) dev.exec.app.make command=makemigrations
 	$(MAKE) dev.exec.app.make command=migrate
 
+# Documentation targets
+docs.up:
+	docker compose -f docker-compose.prod.yml -f docker-compose.dev.yml -f docker-compose.docs.yml --env-file .env.dev up
+docs.build:
+	docker-compose -f docker-compose.prod.yml -f docker-compose.dev.yml -f docker-compose.docs.yml --env-file .env.dev build
+
 # Production targets
 prod.up:
 	docker compose -f docker-compose.prod.yml up

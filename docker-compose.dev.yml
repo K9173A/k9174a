@@ -26,20 +26,3 @@ services:
       SSH_DEBUG: 'true'
     ports:
       - 2222:22
-
-  swagger-editor:
-    image: swaggerapi/swagger-editor
-    ports:
-      - 8081:8080
-
-#  todo: понять, как работать с файлами (они будут сохраняться в волюм?) Понять, что делать с кэшем
-  swagger-ui:
-    image: swaggerapi/swagger-ui
-    environment:
-      - SWAGGER_JSON=/docs/openapi.yaml
-    volumes:
-      - ./docs/openapi.yaml:/docs/openapi.yaml
-    ports:
-      - 8082:8080
-    depends_on:
-      - app
