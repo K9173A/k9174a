@@ -14,7 +14,6 @@ import classes from './Login.module.css';
 import {login} from '../../api/service';
 
 const Login = () => {
-        // todo: check token -> redirect to /login if not present
     const [cookies, setCookie] = useCookies(['K9174A_TOKEN']);
 
     React.useEffect(() => {

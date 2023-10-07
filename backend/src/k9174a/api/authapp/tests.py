@@ -28,7 +28,7 @@ class TestUserData:
 class UserCreateAPIViewTestCase(APITestCase):
     def test_create_user(self) -> None:
         response = self.client.post(
-            path=reverse(viewname='auth:register'),
+            path=reverse('auth:register'),
             data=TestUserData.as_dict(),
             format='json'
         )
@@ -37,7 +37,7 @@ class UserCreateAPIViewTestCase(APITestCase):
     def test_create_existing_user(self) -> None:
         User.objects.create_user(**TestUserData.as_dict())
         response = self.client.post(
-            path=reverse(viewname='auth:register'),
+            path=reverse('auth:register'),
             data=TestUserData.as_dict(),
             format='json'
         )
@@ -45,7 +45,7 @@ class UserCreateAPIViewTestCase(APITestCase):
 
     def test_create_user_without_credentials(self) -> None:
         response = self.client.post(
-            path=reverse(viewname='auth:register'),
+            path=reverse('auth:register'),
             data={},
             format='json'
         )
@@ -55,21 +55,21 @@ class UserCreateAPIViewTestCase(APITestCase):
 class LoginAPIViewTestCase(APITestCase):
     def setUp(self) -> None:
         self.client = APIClient()
+        User.objects.create_user(**TestUserData.as_dict())
 
     def test_login(self) -> None:
-        User.objects.create_user(**TestUserData.as_dict())
         self.client.credentials(HTTP_AUTHORIZATION=get_basic_auth_header(TestUserData.username, TestUserData.password))
-        response = self.client.post(path=reverse(viewname='auth:login'))
+        response = self.client.post(path=reverse('auth:login'))
         self.assertEqual(response.status_code, status.HTTP_200_OK, msg=response.data)
 
     def test_login_user_without_auth_header(self) -> None:
         self.client.credentials()
-        response = self.client.post(path=reverse(viewname='auth:login'))
+        response = self.client.post(path=reverse('auth:login'))
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg=response.data)
 
     def test_login_nonexisting_user(self) -> None:
         self.client.credentials(HTTP_AUTHORIZATION=get_basic_auth_header('doesnt', 'exist'))
-        response = self.client.post(path=reverse(viewname='auth:login'))
+        response = self.client.post(path=reverse('auth:login'))
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN, msg=response.data)
 
 
@@ -80,48 +80,76 @@ class LogoutAPIViewTestCase(APITestCase):
     def test_logout(self) -> None:
         User.objects.create_user(**TestUserData.as_dict())
         self.client.credentials(HTTP_AUTHORIZATION=get_basic_auth_header(TestUserData.username, TestUserData.password))
-        response = self.client.post(path=reverse(viewname='auth:login'))
+        response = self.client.post(path=reverse('auth:login'))
 
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {response.data["token"]}')
-        response = self.client.post(path=reverse(viewname='auth:logout'))
+        response = self.client.post(path=reverse('auth:logout'))
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT, msg=response.data)
 
     def test_logout_without_auth_header(self) -> None:
         self.client.credentials()
-        response = self.client.post(path=reverse(viewname='auth:logout'))
+        response = self.client.post(path=reverse('auth:logout'))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg=response.data)
 
     def test_logout_with_fake_token(self) -> None:
         self.client.credentials(HTTP_AUTHORIZATION='Token fake-token')
-        response = self.client.post(path=reverse(viewname='auth:logout'))
+        response = self.client.post(path=reverse('auth:logout'))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg=response.data)
 
 
 class LogoutAllAPIViewTestCase(APITestCase):
     def setUp(self) -> None:
         self.client = APIClient()
+        User.objects.create_user(**TestUserData.as_dict())
 
     def test_logout_all(self) -> None:
-        User.objects.create_user(**TestUserData.as_dict())
         self.client.credentials(HTTP_AUTHORIZATION=get_basic_auth_header(TestUserData.username, TestUserData.password))
 
         for _ in range(3):
-            response = self.client.post(path=reverse(viewname='auth:login'))
+            response = self.client.post(path=reverse('auth:login'))
             self.assertEqual(response.status_code, status.HTTP_200_OK, msg=response.data)
 
         self.assertEqual(AuthToken.objects.count(), 3)
 
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {response.data["token"]}')
-        response = self.client.post(path=reverse(viewname='auth:logoutall'))
+        response = self.client.post(path=reverse('auth:logoutall'))
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT, msg=response.data)
         self.assertEqual(AuthToken.objects.count(), 0)
 
     def test_logout_all_without_auth_header(self) -> None:
         self.client.credentials()
-        response = self.client.post(path=reverse(viewname='auth:logoutall'))
+        response = self.client.post(path=reverse('auth:logoutall'))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg=response.data)
 
     def test_logout_all_with_fake_token(self) -> None:
         self.client.credentials(HTTP_AUTHORIZATION='Token fake-token')
-        response = self.client.post(path=reverse(viewname='auth:logoutall'))
+        response = self.client.post(path=reverse('auth:logoutall'))
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg=response.data)
+
+
+class ValidateTokenAPIViewTestCase(APITestCase):
+    def setUp(self) -> None:
+        self.client = APIClient()
+        User.objects.create_user(**TestUserData.as_dict())
+
+    def test_check_no_token(self) -> None:
+        self.client.credentials(HTTP_AUTHORIZATION=get_basic_auth_header(TestUserData.username, TestUserData.password))
+        self.client.post(path=reverse('auth:login'))
+        self.client.credentials()
+        response = self.client.get(path=reverse('auth:validate'))
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg=response.data)
+
+    def test_check_token_is_valid(self) -> None:
+        self.client.credentials(HTTP_AUTHORIZATION=get_basic_auth_header(TestUserData.username, TestUserData.password))
+        response = self.client.post(path=reverse('auth:login'))
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {response.data["token"]}')
+        response = self.client.get(path=reverse('auth:validate'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_check_expired_token(self) -> None:
+        self.client.credentials(HTTP_AUTHORIZATION=get_basic_auth_header(TestUserData.username, TestUserData.password))
+        response = self.client.post(path=reverse('auth:login'))
+        AuthToken.objects.all().delete()  # Expired tokens are getting automatically deleted from database
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {response.data["token"]}')
+        response = self.client.get(path=reverse('auth:validate'))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED, msg=response.data)
