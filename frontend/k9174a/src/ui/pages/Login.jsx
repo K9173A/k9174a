@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCookies } from "react-cookie";
+import { Navigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
@@ -11,20 +11,9 @@ import Typography from '@mui/material/Typography';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import classes from './Login.module.css';
-import {login} from '../../api/service';
+import { login } from '../../api/service';
 
 const Login = () => {
-    const [cookies, setCookie] = useCookies(['K9174A_TOKEN']);
-
-    React.useEffect(() => {
-        if (cookies.K9174A_TOKEN) {
-            console.log('Кука есть');
-        } else {
-            console.log('Куки нет');
-        }
-    }, [cookies.K9174A_TOKEN]);
-
-
     const [username, setUsername] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [showPassword, setShowPassword] = React.useState(false);
@@ -34,8 +23,13 @@ const Login = () => {
     const handleLoginButtonClick = (event) => {
         event.preventDefault();
         login({username, password})
-            .then((response) => setCookie('K9174A_TOKEN', response['token']))
-            .catch(() => console.log('failed'));
+            .then((success) => {
+                if (success) {
+                    return <Navigate to='/storage' />;
+                } else {
+                    alert('Login error!');
+                }
+            })
     }
 
     return (
